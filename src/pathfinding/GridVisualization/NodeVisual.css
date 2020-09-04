@@ -1,0 +1,20 @@
+.node {
+  width: 15px;
+  height: 15px;
+}
+
+.target {
+  background-color: red;
+}
+
+.start {
+  background-color: green;
+}
+
+.visited {
+  background-color: blue;
+}
+
+.way {
+  background-color: yellow;
+}
