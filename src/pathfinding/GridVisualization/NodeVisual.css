@@ -7,6 +7,10 @@
   background-color: red;
 }
 
+.wall {
+  background-color: black;
+}
+
 .start {
   background-color: green;
 }

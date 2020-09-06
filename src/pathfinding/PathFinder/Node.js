@@ -5,6 +5,7 @@ class Node {
   #lastNode;
   #isVisited = false;
   #isTargetNode = false;
+  #isWall = false;
 
   constructor(xPos, yPos) {
     this.#xPos = xPos;
@@ -19,12 +20,20 @@ class Node {
     return this.#distanceToStartNode;
   }
 
-  setTargetNode(isTargetNode) {
-    this.#isTargetNode = isTargetNode;
+  setTargetNode() {
+    this.#isTargetNode = true;
   }
 
   isTargetNode() {
     return this.#isTargetNode;
+  }
+
+  setIsWall() {
+    this.#isWall = true;
+  }
+
+  isWall() {
+    return this.#isWall;
   }
 
   setVisited() {

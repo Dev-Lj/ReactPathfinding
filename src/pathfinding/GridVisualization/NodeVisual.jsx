@@ -1,8 +1,11 @@
 import React from "react";
 import "./NodeVisual.css";
 
-export const CLICKMODE_START = "start";
-export const CLICKMODE_TARGET = "target";
+export const CLICKMODE = {
+  START: "start",
+  TARGET: "target",
+  WALL: "wall",
+};
 
 export class NodeVisual extends React.Component {
   getCoordinates() {
@@ -15,6 +18,8 @@ export class NodeVisual extends React.Component {
       conditionalNodeStyle = "target";
     } else if (this.props.isStartNode) {
       conditionalNodeStyle = "start";
+    } else if (this.props.isWallNode) {
+      conditionalNodeStyle = "wall";
     } else if (this.props.isWay) {
       conditionalNodeStyle = "way";
     } else if (this.props.isVisited) {

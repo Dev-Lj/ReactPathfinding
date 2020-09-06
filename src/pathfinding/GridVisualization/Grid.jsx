@@ -1,4 +1,4 @@
-import { NodeVisual, CLICKMODE_START, CLICKMODE_TARGET } from "./NodeVisual";
+import { NodeVisual, CLICKMODE } from "./NodeVisual";
 import React from "react";
 
 const NODE_AMOUNT_X = 60;
@@ -83,6 +83,7 @@ class Grid extends React.Component {
                 isStartNode={node.isStartNode}
                 isTargetNode={node.isTargetNode}
                 isWay={node.isWay}
+                isWallNode={node.isWallNode}
                 nodeClicked={this.nodeClicked}
               />
             );
@@ -96,11 +97,14 @@ class Grid extends React.Component {
     let cord = node.getCoordinates();
 
     switch (this.props.clickMode) {
-      case CLICKMODE_START:
+      case CLICKMODE.START:
         this.setStartNode(this.state.nodesGrid, cord);
         break;
-      case CLICKMODE_TARGET:
+      case CLICKMODE.TARGET:
         this.setTargetNode(this.state.nodesGrid, cord);
+        break;
+      case CLICKMODE.WALL:
+        this.setWallNode(this.state.nodesGrid, cord);
         break;
       default:
         alert(`Invalid clickmode: ${this.props.clickMode}`);
@@ -124,6 +128,11 @@ class Grid extends React.Component {
     }
     clickedNode.isTargetNode = true;
     this.#targetNode = clickedNode;
+  }
+
+  setWallNode(grid, coordinates) {
+    let clickedNode = grid[coordinates.Y][coordinates.X];
+    clickedNode.isWallNode = !clickedNode.isWallNode;
   }
 
   async startPathFinding() {
@@ -197,6 +206,7 @@ function createNodesVisualGrid(amountX, amountY) {
         isVisited: false,
         isStartNode: false,
         isTargetNode: false,
+        isWallNode: false,
         isWay: false,
       };
     }

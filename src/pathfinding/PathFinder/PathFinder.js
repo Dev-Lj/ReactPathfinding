@@ -15,10 +15,13 @@ class PathFinder {
         var newNode = new Node(node.coordinates.X, node.coordinates.Y);
         unvisitedNodes.push(newNode);
         if (node.isTargetNode) {
-          newNode.setTargetNode(true);
+          newNode.setTargetNode();
         }
         if (node.isStartNode) {
           newNode.setDistanceToStartNode(0);
+        }
+        if (node.isWallNode) {
+          newNode.setIsWall();
         }
       }
     }
@@ -37,11 +40,17 @@ class PathFinder {
     while (this.#unvisitedNodes.length) {
       this.sortByDistance(this.#unvisitedNodes);
       let currentNode = this.#unvisitedNodes.shift();
+      if (currentNode.isWall()) {
+        console.log(currentNode.getXPos(), currentNode.getYPos());
+        continue;
+      }
       if (currentNode.isTargetNode())
         return {
           visitedNodes,
           shortestPath: this.getShortestPath(currentNode),
         };
+      if (currentNode.getDistanceToStartNode() === Infinity)
+        return { visitedNodes, shortestPath: [] };
       let neighbours = this.getUnvisitedNeighbours(currentNode);
       this.updateNeighbours(neighbours, currentNode);
       currentNode.setVisited();
@@ -67,6 +76,7 @@ class PathFinder {
       let nodeYPos = node.getYPos();
       return (
         !node.isVisited() &&
+        !node.isWall() &&
         ((nodeXPos === x + 1 && nodeYPos === y) ||
           (nodeXPos === x - 1 && nodeYPos === y) ||
           (nodeXPos === x && nodeYPos === y + 1) ||

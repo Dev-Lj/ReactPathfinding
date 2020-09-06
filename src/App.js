@@ -2,8 +2,7 @@ import React from "react";
 import Grid from "./pathfinding/GridVisualization/Grid";
 import {
   NodeVisual,
-  CLICKMODE_START,
-  CLICKMODE_TARGET,
+  CLICKMODE,
 } from "./pathfinding/GridVisualization/NodeVisual";
 import PathFinder from "./pathfinding/PathFinder/PathFinder";
 import "./App.css";
@@ -12,7 +11,7 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      nodeClickMode: CLICKMODE_START,
+      nodeClickMode: CLICKMODE.START,
     };
   }
 
@@ -31,10 +30,10 @@ class App extends React.Component {
               <label
                 className={
                   "form-check-label " +
-                  (this.state.nodeClickMode === CLICKMODE_START ? "active" : "")
+                  (this.state.nodeClickMode === CLICKMODE.START ? "active" : "")
                 }
                 onClick={() => {
-                  this.setState({ nodeClickMode: CLICKMODE_START });
+                  this.setState({ nodeClickMode: CLICKMODE.START });
                 }}
               >
                 Start Node
@@ -49,15 +48,33 @@ class App extends React.Component {
               <label
                 className={
                   "form-check-label " +
-                  (this.state.nodeClickMode === CLICKMODE_TARGET
+                  (this.state.nodeClickMode === CLICKMODE.TARGET
                     ? "active"
                     : "")
                 }
                 onClick={() => {
-                  this.setState({ nodeClickMode: CLICKMODE_TARGET });
+                  this.setState({ nodeClickMode: CLICKMODE.TARGET });
                 }}
               >
                 Target Node
+              </label>
+            </div>
+          </div>
+          <div className="col-md-2 justify-content-center">
+            <div className="form-check">
+              <div className="form-check-input">
+                <NodeVisual isWallNode={true} />
+              </div>
+              <label
+                className={
+                  "form-check-label " +
+                  (this.state.nodeClickMode === CLICKMODE.WALL ? "active" : "")
+                }
+                onClick={() => {
+                  this.setState({ nodeClickMode: CLICKMODE.WALL });
+                }}
+              >
+                Wall Node
               </label>
             </div>
           </div>
