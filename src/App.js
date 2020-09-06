@@ -16,25 +16,21 @@ class App extends React.Component {
     };
   }
 
-  componentDidMount() {
-    alert(
-      "This site is WIP. The state of the site does not represent the final state."
-    );
-  }
-
   render() {
     return (
       <div>
         <div className="navbar navbar-light bg-light">
           <span className="navbar-brand">PathFinder</span>
         </div>
-        <div className="row justify-content-md-center">
-          <div className="col-2 justify-content-center">
-            <div className="row">
-              <NodeVisual className="col-sm" isStartNode={true} />
+        <div className="row justify-content-center">
+          <div className="col-md-2 justify-content-center">
+            <div className="form-check">
+              <div className="form-check-input">
+                <NodeVisual isStartNode={true} />
+              </div>
               <label
                 className={
-                  "col-sm " +
+                  "form-check-label " +
                   (this.state.nodeClickMode === CLICKMODE_START ? "active" : "")
                 }
                 onClick={() => {
@@ -45,12 +41,14 @@ class App extends React.Component {
               </label>
             </div>
           </div>
-          <div className="col-2 justify-content-center">
-            <div className="row">
-              <NodeVisual className="col-sm" isTargetNode={true} />
+          <div className="col-md-2 justify-content-center">
+            <div className="form-check">
+              <div className="form-check-input">
+                <NodeVisual isTargetNode={true} />
+              </div>
               <label
                 className={
-                  "col-sm " +
+                  "form-check-label " +
                   (this.state.nodeClickMode === CLICKMODE_TARGET
                     ? "active"
                     : "")

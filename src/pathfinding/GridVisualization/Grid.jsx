@@ -1,8 +1,8 @@
 import { NodeVisual, CLICKMODE_START, CLICKMODE_TARGET } from "./NodeVisual";
 import React from "react";
 
-const NODE_AMOUNT_X = 40;
-const NODE_AMOUNT_Y = 40;
+const NODE_AMOUNT_X = 60;
+const NODE_AMOUNT_Y = 60;
 
 class Grid extends React.Component {
   #startNode;
@@ -14,24 +14,66 @@ class Grid extends React.Component {
       nodesGrid: [],
       isPathfindingRunning: false,
     };
+    this.grid = React.createRef();
     this.nodeClicked = this.nodeClicked.bind(this);
+    this.initGrid = this.initGrid.bind(this);
   }
 
   componentDidMount() {
     this.initGrid();
+    window.addEventListener("resize", this.initGrid);
+  }
+
+  componentWillUnmount() {
+    this.removeEventListener("resize", this.initGrid);
   }
 
   initGrid() {
-    const nodesGrid = createNodesVisualGrid(NODE_AMOUNT_X, NODE_AMOUNT_Y);
+    if (this.state.isPathfindingRunning) {
+      return;
+    }
+    let gridProperties = this.calculateGridProportions();
+    const nodesGrid = createNodesVisualGrid(
+      gridProperties.Width,
+      gridProperties.Height
+    );
+    if (
+      this.#startNode &&
+      this.#startNode.coordinates.X < gridProperties.Width &&
+      this.#startNode.coordinates.Y < gridProperties.Height
+    ) {
+      this.setStartNode(nodesGrid, this.#startNode.coordinates);
+    } else {
+      this.#startNode = undefined;
+    }
+    if (
+      this.#targetNode &&
+      this.#targetNode.coordinates.X < gridProperties.Width &&
+      this.#targetNode.coordinates.Y < gridProperties.Height
+    ) {
+      this.setTargetNode(nodesGrid, this.#targetNode.coordinates);
+    } else {
+      this.#targetNode = undefined;
+    }
     this.setState({
       nodesGrid,
     });
   }
 
+  calculateGridProportions() {
+    let doableWidth = Math.floor(this.grid.current.offsetWidth / 15) - 2;
+    let doableHeight =
+      Math.floor((window.innerHeight - this.grid.current.offsetTop) / 15) - 2;
+    return {
+      Width: doableWidth < NODE_AMOUNT_X ? doableWidth : NODE_AMOUNT_X,
+      Height: doableHeight < NODE_AMOUNT_Y ? doableHeight : NODE_AMOUNT_Y,
+    };
+  }
+
   formatNodes(grid) {
     return grid.map((row, y) => {
       return (
-        <div key={y} className="row justify-content-center">
+        <div key={y} className="row justify-content-center flex-nowrap">
           {row.map((node, x) => {
             return (
               <NodeVisual
@@ -55,10 +97,10 @@ class Grid extends React.Component {
 
     switch (this.props.clickMode) {
       case CLICKMODE_START:
-        this.setStartNode(cord);
+        this.setStartNode(this.state.nodesGrid, cord);
         break;
       case CLICKMODE_TARGET:
-        this.setTargetNode(cord);
+        this.setTargetNode(this.state.nodesGrid, cord);
         break;
       default:
         alert(`Invalid clickmode: ${this.props.clickMode}`);
@@ -66,8 +108,8 @@ class Grid extends React.Component {
     this.setState({ nodesGrid: [...this.state.nodesGrid] });
   }
 
-  setStartNode(coordinates) {
-    var clickedNode = this.state.nodesGrid[coordinates.Y][coordinates.X];
+  setStartNode(grid, coordinates) {
+    var clickedNode = grid[coordinates.Y][coordinates.X];
     if (this.#startNode) {
       this.#startNode.isStartNode = false;
     }
@@ -75,8 +117,8 @@ class Grid extends React.Component {
     this.#startNode = clickedNode;
   }
 
-  setTargetNode(coordinates) {
-    var clickedNode = this.state.nodesGrid[coordinates.Y][coordinates.X];
+  setTargetNode(grid, coordinates) {
+    var clickedNode = grid[coordinates.Y][coordinates.X];
     if (this.#targetNode) {
       this.#targetNode.isTargetNode = false;
     }
@@ -95,10 +137,8 @@ class Grid extends React.Component {
     await this.visualizePathFinding(visitedNodes);
     await this.visualizeShortestPath(shortestPath);
     await sleep(1000);
-    this.initGrid();
-    this.setStartNode(this.#startNode.coordinates);
-    this.setTargetNode(this.#targetNode.coordinates);
     this.setState({ isPathfindingRunning: false });
+    this.initGrid();
   }
 
   async visualizePathFinding(visitedNodes) {
@@ -126,7 +166,7 @@ class Grid extends React.Component {
   render() {
     return (
       <div className="container-fluid justify-content-center mt-2">
-        <div className="row justify-content-center">
+        <div className="row justify-content-center mb-2">
           <button
             type="button"
             className="btn btn-primary"
@@ -138,7 +178,7 @@ class Grid extends React.Component {
             Animate Dijkstra
           </button>
         </div>
-        <div className="container">
+        <div className="container" ref={this.grid}>
           {this.formatNodes(this.state.nodesGrid)}
         </div>
       </div>
