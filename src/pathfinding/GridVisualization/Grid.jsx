@@ -17,15 +17,24 @@ class Grid extends React.Component {
     this.grid = React.createRef();
     this.nodeClicked = this.nodeClicked.bind(this);
     this.initGrid = this.initGrid.bind(this);
+    this.screenTiltEvent = this.screenTiltEvent.bind(this);
   }
 
   componentDidMount() {
     this.initGrid();
-    window.addEventListener("resize", this.initGrid);
+    window.addEventListener("orientationchange", this.screenTiltEvent);
   }
 
   componentWillUnmount() {
-    this.removeEventListener("resize", this.initGrid);
+    this.removeEventListener("orientationchange", this.screenTiltEvent);
+  }
+
+  screenTiltEvent() {
+    var afterOrientationChanged = () => {
+      this.initGrid();
+      window.removeEventListener("resize", afterOrientationChanged);
+    };
+    window.addEventListener("resize", afterOrientationChanged);
   }
 
   initGrid() {
