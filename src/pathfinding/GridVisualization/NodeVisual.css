@@ -4,21 +4,29 @@
 }
 
 .target {
-  background-color: red;
+  background-color: #9e2a2b;
 }
 
 .wall {
-  background-color: black;
+  background-color: darkslategrey;
 }
 
 .start {
-  background-color: green;
+  background-color: #3da971;
 }
 
 .visited {
-  background-color: blue;
+  background-color: #52b2cf;
+  animation: pop 0.3s linear 1;
 }
 
 .way {
-  background-color: yellow;
+  background-color: #ffd649;
+  animation: pop 0.3s linear 1;
+}
+
+@keyframes pop {
+  50% {
+    transform: scale(1.1);
+  }
 }
