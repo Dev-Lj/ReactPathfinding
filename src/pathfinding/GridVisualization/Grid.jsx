@@ -14,6 +14,7 @@ class Grid extends React.Component {
     this.state = {
       nodesGrid: [],
       isPathfindingRunning: false,
+      nodeClickMode: CLICKMODE.START,
     };
     this.grid = React.createRef();
     this.nodeClicked = this.nodeClicked.bind(this);
@@ -120,18 +121,20 @@ class Grid extends React.Component {
 
     let clickedNode = this.getNode(this.state.nodesGrid, node.getCoordinates());
 
-    switch (this.props.clickMode) {
+    switch (this.state.nodeClickMode) {
       case CLICKMODE.START:
         this.setStartNode(clickedNode);
+        this.setState({ nodeClickMode: CLICKMODE.TARGET });
         break;
       case CLICKMODE.TARGET:
         this.setTargetNode(clickedNode);
+        this.setState({ nodeClickMode: CLICKMODE.WALL });
         break;
       case CLICKMODE.WALL:
         this.setWallNode(clickedNode, !clickedNode.isWallNode);
         break;
       default:
-        alert(`Invalid clickmode: ${this.props.clickMode}`);
+        alert(`Invalid clickmode: ${this.state.nodeClickMode}`);
     }
     this.setState({ nodesGrid: [...this.state.nodesGrid] });
   }
@@ -208,7 +211,65 @@ class Grid extends React.Component {
   render() {
     return (
       <div className="container-fluid justify-content-center mt-2">
-        <div className="row justify-content-center mb-2">
+        <div className="row justify-content-center">
+          <div className="col-md-2 justify-content-center">
+            <div className="form-check">
+              <div className="form-check-input">
+                <NodeVisual isStartNode={true} />
+              </div>
+              <label
+                className={
+                  "form-check-label " +
+                  (this.state.nodeClickMode === CLICKMODE.START ? "active" : "")
+                }
+                onClick={() => {
+                  this.setState({ nodeClickMode: CLICKMODE.START });
+                }}
+              >
+                Start Node
+              </label>
+            </div>
+          </div>
+          <div className="col-md-2 justify-content-center">
+            <div className="form-check">
+              <div className="form-check-input">
+                <NodeVisual isTargetNode={true} />
+              </div>
+              <label
+                className={
+                  "form-check-label " +
+                  (this.state.nodeClickMode === CLICKMODE.TARGET
+                    ? "active"
+                    : "")
+                }
+                onClick={() => {
+                  this.setState({ nodeClickMode: CLICKMODE.TARGET });
+                }}
+              >
+                Target Node
+              </label>
+            </div>
+          </div>
+          <div className="col-md-2 justify-content-center">
+            <div className="form-check">
+              <div className="form-check-input">
+                <NodeVisual isWallNode={true} />
+              </div>
+              <label
+                className={
+                  "form-check-label " +
+                  (this.state.nodeClickMode === CLICKMODE.WALL ? "active" : "")
+                }
+                onClick={() => {
+                  this.setState({ nodeClickMode: CLICKMODE.WALL });
+                }}
+              >
+                Wall Node
+              </label>
+            </div>
+          </div>
+        </div>
+        <div className="row justify-content-center mt-2 mb-2">
           <button
             type="button"
             className="btn btn-primary"
