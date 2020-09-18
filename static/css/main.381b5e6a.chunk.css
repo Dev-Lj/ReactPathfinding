@@ -1,0 +1,2 @@
+.node{width:15px;height:15px}.target{background-color:#9e2a2b}.wall{background-color:#2f4f4f}.start{background-color:#3da971}.visited{background-color:#52b2cf}.visited,.way{-webkit-animation:pop .3s linear 1;animation:pop .3s linear 1}.way{background-color:#ffd649}@-webkit-keyframes pop{50%{transform:scale(1.1)}}@keyframes pop{50%{transform:scale(1.1)}}body,html{overflow:hidden}.active{text-decoration:underline}
+/*# sourceMappingURL=main.381b5e6a.chunk.css.map */
