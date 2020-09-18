@@ -7,27 +7,24 @@ export const CLICKMODE = {
   WALL: "wall",
 };
 
+export const NODEMODE = {
+  NONE: "",
+  START: "start",
+  TARGET: "target",
+  WALL: "wall",
+  WAY: "way",
+  VISITED: "visited",
+};
+
 export class NodeVisual extends React.Component {
   getCoordinates() {
     return this.props.coordinates;
   }
 
   render() {
-    let conditionalNodeStyle = "";
-    if (this.props.isTargetNode) {
-      conditionalNodeStyle = "target";
-    } else if (this.props.isStartNode) {
-      conditionalNodeStyle = "start";
-    } else if (this.props.isWallNode) {
-      conditionalNodeStyle = "wall";
-    } else if (this.props.isWay) {
-      conditionalNodeStyle = "way";
-    } else if (this.props.isVisited) {
-      conditionalNodeStyle = "visited";
-    }
     return (
       <div
-        className={"node border " + conditionalNodeStyle}
+        className={"node border " + this.props.mode}
         onClick={() => {
           if (this.props.nodeClicked) {
             this.props.nodeClicked(this);

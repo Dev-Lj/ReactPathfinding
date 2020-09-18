@@ -1,5 +1,3 @@
-import Node from "../PathFinder/Node";
-
 class PathFinder {
   #unvisitedNodes;
 
@@ -12,17 +10,7 @@ class PathFinder {
     var unvisitedNodes = [];
     for (let row of grid) {
       for (let node of row) {
-        var newNode = new Node(node.coordinates.X, node.coordinates.Y);
-        unvisitedNodes.push(newNode);
-        if (node.isTargetNode) {
-          newNode.setTargetNode();
-        }
-        if (node.isStartNode) {
-          newNode.setDistanceToStartNode(0);
-        }
-        if (node.isWallNode) {
-          newNode.setIsWall();
-        }
+        unvisitedNodes.push(node);
       }
     }
     return unvisitedNodes;

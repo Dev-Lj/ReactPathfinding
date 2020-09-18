@@ -1,4 +1,5 @@
-import { NodeVisual, CLICKMODE } from "./NodeVisual";
+import { NodeVisual, CLICKMODE, NODEMODE } from "./NodeVisual";
+import Node from "../PathFinder/Node";
 import React from "react";
 
 const NODE_AMOUNT_X = 60;
@@ -31,6 +32,9 @@ class Grid extends React.Component {
     this.removeEventListener("orientationchange", this.screenTiltEvent);
   }
 
+  /**
+   * Init Grid AFTER resize happened
+   */
   screenTiltEvent() {
     var afterOrientationChanged = () => {
       this.initGrid();
@@ -91,29 +95,6 @@ class Grid extends React.Component {
     };
   }
 
-  formatNodes(grid) {
-    return grid.map((row, y) => {
-      return (
-        <div key={y} className="row justify-content-center flex-nowrap">
-          {row.map((node, x) => {
-            return (
-              <NodeVisual
-                key={node.key}
-                coordinates={node.coordinates}
-                isVisited={node.isVisited}
-                isStartNode={node.isStartNode}
-                isTargetNode={node.isTargetNode}
-                isWay={node.isWay}
-                isWallNode={node.isWallNode}
-                nodeClicked={this.nodeClicked}
-              />
-            );
-          })}
-        </div>
-      );
-    });
-  }
-
   nodeClicked(node) {
     if (this.state.isPathfindingRunning) {
       return;
@@ -141,28 +122,25 @@ class Grid extends React.Component {
 
   setStartNode(clickedNode) {
     if (this.#startNode) {
-      this.#startNode.isStartNode = false;
+      this.#startNode.mode = NODEMODE.NONE;
     }
-    clickedNode.isStartNode = true;
+    clickedNode.mode = NODEMODE.START;
     this.#startNode = clickedNode;
   }
 
   setTargetNode(clickedNode) {
     if (this.#targetNode) {
-      this.#targetNode.isTargetNode = false;
+      this.#targetNode.mode = NODEMODE.NONE;
     }
-    clickedNode.isTargetNode = true;
+    clickedNode.mode = NODEMODE.TARGET;
     this.#targetNode = clickedNode;
   }
 
   setWallNode(clickedNode, isWallNode) {
-    clickedNode.isWallNode = isWallNode;
-    if (clickedNode.isWallNode && this.#wallNodes.indexOf(clickedNode) === -1) {
+    clickedNode.mode = isWallNode ? NODEMODE.WALL : NODEMODE.NONE;
+    if (isWallNode && this.#wallNodes.indexOf(clickedNode) === -1) {
       this.#wallNodes.push(clickedNode);
-    } else if (
-      !clickedNode.isWallNode &&
-      this.#wallNodes.indexOf(clickedNode) !== -1
-    ) {
+    } else if (!isWallNode && this.#wallNodes.indexOf(clickedNode) !== -1) {
       this.#wallNodes.splice(this.#wallNodes.indexOf(clickedNode), 1);
     }
   }
@@ -177,7 +155,7 @@ class Grid extends React.Component {
       return false;
     }
     this.setState({ isPathfindingRunning: true });
-    this.props.pathFinder.init(this.state.nodesGrid);
+    this.props.pathFinder.init(this.visualGridToNodesGrid());
     let { visitedNodes, shortestPath } = this.props.pathFinder.doPathFinding();
     await this.visualizePathFinding(visitedNodes);
     await this.visualizeShortestPath(shortestPath);
@@ -186,11 +164,43 @@ class Grid extends React.Component {
     this.initGrid();
   }
 
+  /**
+   * Convert visual node objects to node objects for pathfinder to use
+   */
+  visualGridToNodesGrid() {
+    var nodesGrid = [];
+    for (let [y, row] of this.state.nodesGrid.entries()) {
+      nodesGrid.push([]);
+      for (let visualNode of row) {
+        let node = new Node(visualNode.coordinates.X, visualNode.coordinates.Y);
+        if (visualNode.mode !== NODEMODE.NONE) {
+          switch (visualNode.mode) {
+            case NODEMODE.START:
+              node.setDistanceToStartNode(0);
+              break;
+            case NODEMODE.TARGET:
+              node.setTargetNode();
+              break;
+            case NODEMODE.WALL:
+              node.setIsWall();
+              break;
+            default:
+              console.error(`Unknown NODEMODE: ${visualNode.mode}`);
+          }
+        }
+        nodesGrid[y].push(node);
+      }
+    }
+    return nodesGrid;
+  }
+
   async visualizePathFinding(visitedNodes) {
     for (const node of visitedNodes) {
       this.setState((state) => {
         const nodesGrid = [...state.nodesGrid];
-        nodesGrid[node.getYPos()][node.getXPos()].isVisited = true;
+        let visualNode = nodesGrid[node.getYPos()][node.getXPos()];
+        if (visualNode.mode === NODEMODE.NONE)
+          visualNode.mode = NODEMODE.VISITED;
         return nodesGrid;
       });
       await sleep(10);
@@ -201,11 +211,32 @@ class Grid extends React.Component {
     for (const node of shortestPath) {
       this.setState((state) => {
         const nodesGrid = [...state.nodesGrid];
-        nodesGrid[node.getYPos()][node.getXPos()].isWay = true;
+        let visualNode = nodesGrid[node.getYPos()][node.getXPos()];
+        if (visualNode.mode === NODEMODE.VISITED)
+          visualNode.mode = NODEMODE.WAY;
         return nodesGrid;
       });
       await sleep(10);
     }
+  }
+
+  formatNodes(grid) {
+    return grid.map((row, y) => {
+      return (
+        <div key={y} className="row justify-content-center flex-nowrap">
+          {row.map((node, x) => {
+            return (
+              <NodeVisual
+                key={node.key}
+                coordinates={node.coordinates}
+                mode={node.mode}
+                nodeClicked={this.nodeClicked}
+              />
+            );
+          })}
+        </div>
+      );
+    });
   }
 
   render() {
@@ -215,7 +246,7 @@ class Grid extends React.Component {
           <div className="col-md-2 justify-content-center">
             <div className="form-check">
               <div className="form-check-input">
-                <NodeVisual isStartNode={true} />
+                <NodeVisual mode={NODEMODE.START} />
               </div>
               <label
                 className={
@@ -233,7 +264,7 @@ class Grid extends React.Component {
           <div className="col-md-2 justify-content-center">
             <div className="form-check">
               <div className="form-check-input">
-                <NodeVisual isTargetNode={true} />
+                <NodeVisual mode={NODEMODE.TARGET} />
               </div>
               <label
                 className={
@@ -253,7 +284,7 @@ class Grid extends React.Component {
           <div className="col-md-2 justify-content-center">
             <div className="form-check">
               <div className="form-check-input">
-                <NodeVisual isWallNode={true} />
+                <NodeVisual mode={NODEMODE.WALL} />
               </div>
               <label
                 className={
@@ -297,11 +328,7 @@ function createNodesVisualGrid(amountX, amountY) {
       nodesGrid[y][x] = {
         key: "" + y + x,
         coordinates: { Y: y, X: x },
-        isVisited: false,
-        isStartNode: false,
-        isTargetNode: false,
-        isWallNode: false,
-        isWay: false,
+        mode: NODEMODE.NONE,
       };
     }
   }
