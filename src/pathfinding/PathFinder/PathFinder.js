@@ -41,7 +41,6 @@ class PathFinder {
       this.sortByDistance(this.#unvisitedNodes);
       let currentNode = this.#unvisitedNodes.shift();
       if (currentNode.isWall()) {
-        console.log(currentNode.getXPos(), currentNode.getYPos());
         continue;
       }
       if (currentNode.isTargetNode())
