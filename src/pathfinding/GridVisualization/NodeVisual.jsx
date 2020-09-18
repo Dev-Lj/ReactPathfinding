@@ -33,6 +33,11 @@ export class NodeVisual extends React.Component {
             this.props.nodeClicked(this);
           }
         }}
+        onMouseOver={(e) => {
+          if (e.buttons === 1) {
+            this.props.nodeClicked(this);
+          }
+        }}
       ></div>
     );
   }

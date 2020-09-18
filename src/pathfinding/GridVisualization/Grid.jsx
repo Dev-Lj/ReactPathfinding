@@ -103,6 +103,10 @@ class Grid extends React.Component {
   }
 
   nodeClicked(node) {
+    if (this.state.isPathfindingRunning) {
+      return;
+    }
+
     let cord = node.getCoordinates();
 
     switch (this.props.clickMode) {
