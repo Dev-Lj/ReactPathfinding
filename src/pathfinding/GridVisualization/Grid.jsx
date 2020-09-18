@@ -7,6 +7,7 @@ const NODE_AMOUNT_Y = 60;
 class Grid extends React.Component {
   #startNode;
   #targetNode;
+  #wallNodes = [];
 
   constructor(props) {
     super(props);
@@ -41,32 +42,42 @@ class Grid extends React.Component {
     if (this.state.isPathfindingRunning) {
       return;
     }
-    let gridProperties = this.calculateGridProportions();
+    var gridProperties = this.calculateGridProportions();
     const nodesGrid = createNodesVisualGrid(
       gridProperties.Width,
       gridProperties.Height
     );
-    if (
-      this.#startNode &&
-      this.#startNode.coordinates.X < gridProperties.Width &&
-      this.#startNode.coordinates.Y < gridProperties.Height
-    ) {
-      this.setStartNode(nodesGrid, this.#startNode.coordinates);
+    if (this.isValidNode(this.#startNode, gridProperties)) {
+      let startNode = this.getNode(nodesGrid, this.#startNode.coordinates);
+      this.setStartNode(startNode);
     } else {
       this.#startNode = undefined;
     }
-    if (
-      this.#targetNode &&
-      this.#targetNode.coordinates.X < gridProperties.Width &&
-      this.#targetNode.coordinates.Y < gridProperties.Height
-    ) {
-      this.setTargetNode(nodesGrid, this.#targetNode.coordinates);
+    if (this.isValidNode(this.#targetNode, gridProperties)) {
+      let targetNode = this.getNode(nodesGrid, this.#targetNode.coordinates);
+      this.setTargetNode(targetNode);
     } else {
       this.#targetNode = undefined;
     }
+    let oldWallNodes = [...this.#wallNodes];
+    this.#wallNodes = [];
+    oldWallNodes.forEach((node) => {
+      if (this.isValidNode(node, gridProperties)) {
+        let wallNode = this.getNode(nodesGrid, node.coordinates);
+        this.setWallNode(wallNode, true);
+      }
+    });
     this.setState({
       nodesGrid,
     });
+  }
+
+  isValidNode(node, gridProperties) {
+    return (
+      node &&
+      node.coordinates.X < gridProperties.Width &&
+      node.coordinates.Y < gridProperties.Height
+    );
   }
 
   calculateGridProportions() {
@@ -107,17 +118,17 @@ class Grid extends React.Component {
       return;
     }
 
-    let cord = node.getCoordinates();
+    let clickedNode = this.getNode(this.state.nodesGrid, node.getCoordinates());
 
     switch (this.props.clickMode) {
       case CLICKMODE.START:
-        this.setStartNode(this.state.nodesGrid, cord);
+        this.setStartNode(clickedNode);
         break;
       case CLICKMODE.TARGET:
-        this.setTargetNode(this.state.nodesGrid, cord);
+        this.setTargetNode(clickedNode);
         break;
       case CLICKMODE.WALL:
-        this.setWallNode(this.state.nodesGrid, cord);
+        this.setWallNode(clickedNode, !clickedNode.isWallNode);
         break;
       default:
         alert(`Invalid clickmode: ${this.props.clickMode}`);
@@ -125,8 +136,7 @@ class Grid extends React.Component {
     this.setState({ nodesGrid: [...this.state.nodesGrid] });
   }
 
-  setStartNode(grid, coordinates) {
-    var clickedNode = grid[coordinates.Y][coordinates.X];
+  setStartNode(clickedNode) {
     if (this.#startNode) {
       this.#startNode.isStartNode = false;
     }
@@ -134,8 +144,7 @@ class Grid extends React.Component {
     this.#startNode = clickedNode;
   }
 
-  setTargetNode(grid, coordinates) {
-    var clickedNode = grid[coordinates.Y][coordinates.X];
+  setTargetNode(clickedNode) {
     if (this.#targetNode) {
       this.#targetNode.isTargetNode = false;
     }
@@ -143,9 +152,20 @@ class Grid extends React.Component {
     this.#targetNode = clickedNode;
   }
 
-  setWallNode(grid, coordinates) {
-    let clickedNode = grid[coordinates.Y][coordinates.X];
-    clickedNode.isWallNode = !clickedNode.isWallNode;
+  setWallNode(clickedNode, isWallNode) {
+    clickedNode.isWallNode = isWallNode;
+    if (clickedNode.isWallNode && this.#wallNodes.indexOf(clickedNode) === -1) {
+      this.#wallNodes.push(clickedNode);
+    } else if (
+      !clickedNode.isWallNode &&
+      this.#wallNodes.indexOf(clickedNode) !== -1
+    ) {
+      this.#wallNodes.splice(this.#wallNodes.indexOf(clickedNode), 1);
+    }
+  }
+
+  getNode(grid, coordinates) {
+    return grid[coordinates.Y][coordinates.X];
   }
 
   async startPathFinding() {
