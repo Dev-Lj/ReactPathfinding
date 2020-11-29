@@ -77,6 +77,21 @@ class Grid extends React.Component {
     });
   }
 
+  clearGrid() {
+    if (this.state.isPathfindingRunning) {
+      return;
+    }
+    var gridProperties = this.calculateGridProportions();
+    const nodesGrid = createNodesVisualGrid(
+      gridProperties.Width,
+      gridProperties.Height
+    );
+    this.setState({
+      nodesGrid,
+      nodeClickMode: CLICKMODE.START,
+    });
+  }
+
   isValidNode(node, gridProperties) {
     return (
       node &&
@@ -301,6 +316,16 @@ class Grid extends React.Component {
           </div>
         </div>
         <div className="row justify-content-center mt-2 mb-2">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm mr-2"
+            onClick={() => {
+              this.clearGrid();
+            }}
+            disabled={this.state.isPathfindingRunning}
+          >
+            Clear Grid
+          </button>
           <button
             type="button"
             className="btn btn-primary"
