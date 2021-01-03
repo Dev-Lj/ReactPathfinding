@@ -77,7 +77,7 @@ class Grid extends React.Component {
     });
   }
 
-  clearGrid() {
+  clearGrid(returnNodesGrid = false) {
     if (this.state.isPathfindingRunning) {
       return;
     }
@@ -90,6 +90,9 @@ class Grid extends React.Component {
       nodesGrid,
       nodeClickMode: CLICKMODE.START,
     });
+    if (returnNodesGrid) {
+      return nodesGrid;
+    }
   }
 
   isValidNode(node, gridProperties) {
@@ -254,6 +257,20 @@ class Grid extends React.Component {
     });
   }
 
+  async startMazeGeneration() {
+    const nodesGrid = this.clearGrid(true);
+    var instructions;
+    instructions = this.props.mazeGenerator.generateMaze(nodesGrid);
+    for (const instruction of instructions) {
+      this.props.mazeGenerator.drawWall(nodesGrid, instruction.wallDirection, instruction.wallCoordinate, instruction.holePos, instruction.from, instruction.to);
+      this.setState({
+        nodesGrid
+      });
+      // If the Maze-generation should be animated, uncomment
+      // await sleep(10);
+    }
+  }
+
   render() {
     return (
       <div className="container-fluid justify-content-center mt-2">
@@ -335,6 +352,16 @@ class Grid extends React.Component {
             disabled={this.state.isPathfindingRunning}
           >
             Animate Dijkstra
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm ml-2"
+            onClick={() => {
+              this.startMazeGeneration();
+            }}
+            disabled={this.state.isPathfindingRunning}
+          >
+            Generate Maze
           </button>
         </div>
         <div className="container" ref={this.grid}>
