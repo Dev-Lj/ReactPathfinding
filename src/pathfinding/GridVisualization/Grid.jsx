@@ -262,7 +262,8 @@ class Grid extends React.Component {
     var instructions;
     instructions = this.props.mazeGenerator.generateMaze(nodesGrid);
     for (const instruction of instructions) {
-      this.props.mazeGenerator.drawWall(nodesGrid, instruction.wallDirection, instruction.wallCoordinate, instruction.holePos, instruction.from, instruction.to);
+      let walls = this.props.mazeGenerator.drawWall(nodesGrid, instruction.wallDirection, instruction.wallCoordinate, instruction.holePos, instruction.from, instruction.to);
+      this.#wallNodes = this.#wallNodes.concat(walls);
       this.setState({
         nodesGrid
       });

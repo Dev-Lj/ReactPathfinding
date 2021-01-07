@@ -178,11 +178,13 @@ class MazeGenerator {
    * @param {Number} to  Last tile of wall (including)
    */
   drawWall(grid, wallDirection, wallCoordinate, holePos, from, to) {
+    var walls = [];
     if (wallDirection === DIRECTION_X) {
       // Draw wall in x direction accross piece to separate
       for (let xPos = from; xPos <= to; xPos++) {
         if (xPos !== holePos) {
           grid[wallCoordinate][xPos].mode = NODEMODE.WALL;
+          walls.push(grid[wallCoordinate][xPos]);
         }
       }
     } else {
@@ -190,9 +192,11 @@ class MazeGenerator {
       for (let yPos = from; yPos <= to; yPos++) {
         if (yPos !== holePos) {
           grid[yPos][wallCoordinate].mode = NODEMODE.WALL;
+          walls.push(grid[yPos][wallCoordinate]);
         }
       }
     }
+    return walls;
   }
 }
 
