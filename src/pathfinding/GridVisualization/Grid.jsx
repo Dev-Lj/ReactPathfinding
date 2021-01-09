@@ -9,6 +9,7 @@ class Grid extends React.Component {
   #startNode;
   #targetNode;
   #wallNodes = [];
+  #isPathFindingAborted = false;
 
   constructor(props) {
     super(props);
@@ -21,6 +22,7 @@ class Grid extends React.Component {
     this.nodeClicked = this.nodeClicked.bind(this);
     this.initGrid = this.initGrid.bind(this);
     this.screenTiltEvent = this.screenTiltEvent.bind(this);
+    this.abortAnimation = this.abortAnimation.bind(this);
   }
 
   componentDidMount() {
@@ -90,9 +92,17 @@ class Grid extends React.Component {
       nodesGrid,
       nodeClickMode: CLICKMODE.START,
     });
+    this.#startNode = undefined;
+    this.#targetNode = undefined;
+    this.#wallNodes = [];
     if (returnNodesGrid) {
       return nodesGrid;
     }
+  }
+
+  abortAnimation() {
+    this.setState({ isPathfindingRunning: false });
+    this.#isPathFindingAborted = true;
   }
 
   isValidNode(node, gridProperties) {
@@ -177,7 +187,11 @@ class Grid extends React.Component {
     let { visitedNodes, shortestPath } = this.props.pathFinder.doPathFinding();
     await this.visualizePathFinding(visitedNodes);
     await this.visualizeShortestPath(shortestPath);
-    await sleep(1000);
+    if (!this.#isPathFindingAborted) {
+      await sleep(1000);
+    } else {
+      this.#isPathFindingAborted = false;
+    }
     this.setState({ isPathfindingRunning: false });
     this.initGrid();
   }
@@ -221,12 +235,18 @@ class Grid extends React.Component {
           visualNode.mode = NODEMODE.VISITED;
         return nodesGrid;
       });
+      if (this.#isPathFindingAborted) {
+        return;
+      }
       await sleep(10);
     }
   }
 
   async visualizeShortestPath(shortestPath) {
     for (const node of shortestPath) {
+      if (this.#isPathFindingAborted) {
+        return;
+      }
       this.setState((state) => {
         const nodesGrid = [...state.nodesGrid];
         let visualNode = nodesGrid[node.getYPos()][node.getXPos()];
@@ -333,14 +353,13 @@ class Grid extends React.Component {
             </div>
           </div>
         </div>
-        <div className="row justify-content-center mt-2 mb-2">
+        <div className="row justify-content-center mt-2 mb-2" hidden={this.state.isPathfindingRunning}>
           <button
             type="button"
             className="btn btn-secondary btn-sm mr-2"
             onClick={() => {
               this.clearGrid();
             }}
-            disabled={this.state.isPathfindingRunning}
           >
             Clear Grid
           </button>
@@ -350,7 +369,6 @@ class Grid extends React.Component {
             onClick={() => {
               this.startPathFinding();
             }}
-            disabled={this.state.isPathfindingRunning}
           >
             Animate Dijkstra
           </button>
@@ -360,10 +378,18 @@ class Grid extends React.Component {
             onClick={() => {
               this.startMazeGeneration();
             }}
-            disabled={this.state.isPathfindingRunning}
           >
             Generate Maze
           </button>
+        </div>
+        <div className="row justify-content-center mt-2 mb-2" hidden={!this.state.isPathfindingRunning}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              this.abortAnimation();
+            }}
+          >Abort Animation</button>
         </div>
         <div className="container" ref={this.grid}>
           {this.formatNodes(this.state.nodesGrid)}
